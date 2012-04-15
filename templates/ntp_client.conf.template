@@ -1,0 +1,4 @@
+server %(server)s
+restrict default notrust nomodify nopeer
+restrict %(server)s
+restrict 127.0.0.1
