@@ -1,12 +1,12 @@
 server {
 	listen			443;
-	server_name		%(sub)s.brainwavelive.com;
+	server_name		%(sub)s.%(web_domain)s;
 	access_log		/var/log/nginx/%(sub)s.access_log main;
 	error_log		/var/log/nginx/%(sub)s.error_log;
 
 	ssl			on;
-	ssl_certificate         /etc/nginx/ssl/brainwavelive.com.crt;
-	ssl_certificate_key     /etc/nginx/ssl/brainwavelive.com.key;
+	ssl_certificate         %(web_ssl_certificate)s;
+	ssl_certificate_key     %(web_ssl_certificate_key)s;
 
 	location / {
 		proxy_pass		%(url)s;

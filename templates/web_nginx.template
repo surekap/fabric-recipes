@@ -1,6 +1,6 @@
 server {
 	listen			80;
-	server_name		%(sub)s.brainwavelive.com;
+	server_name		%(sub)s.%(web_domain)s;
 	access_log		/var/log/nginx/%(sub)s.access_log main;
 	error_log		/var/log/nginx/%(sub)s.error_log;
 
