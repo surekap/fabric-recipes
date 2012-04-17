@@ -22,6 +22,11 @@ def ensure(**kwargs):
             run("""sysctl kernel.hostname=%s""" % kwargs[env.host])
             
             import service
-            service.ensure(hostname="restarted")
+            svc = {"hostname.sh":"restarted"}
+            service.ensure(**svc)
         
     
+@task
+def ensure_from_file():
+    """ Use the file to set hostnames """
+    pass

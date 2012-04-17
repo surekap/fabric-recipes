@@ -9,7 +9,7 @@
 #######################################################################
 """
 
-from fabric.api import task, env
+from fabric.api import task, env, run
 from fabric.colors import red
 from utils import reconfigure, is_debian_or_ubuntu
 env.warn_only = True
@@ -29,10 +29,10 @@ def config(public=env.get("SNMP_PUBLIC", SNMP_PUBLIC),
         print red("Cannot deploy to non-debian/ubuntu host: %s" % env.host)
         return
     params = {
-        public: public,
-        location: location,
-        contact: contact,
-        net: net
+        "public": public,
+        "location": location,
+        "contact": contact,
+        "net": net
     }
     reconfigure("snmpd.conf.template", params, SNMPD_CONF_PATH)
     reconfigure("snmpd.template", params, SNMPD_PATH)
@@ -46,6 +46,12 @@ def deploy():
         return
     
     import apt, service
-    apt.ensure(snmpd="latest")
+    packages = {"snmpd":"latest"}
+    if run("cat /etc/issue").find("6.0") > -1:
+        # its debian 6
+        packages["snmp-mibs-downloader"] = "installed"
+        
+    apt.ensure(**packages)
+    
     config()
     service.ensure(snmpd="restarted")

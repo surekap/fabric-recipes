@@ -11,7 +11,6 @@
 
 from fabric.api import task, env
 from fabric.colors import red
-import apt, service
 from utils import reconfigure, is_debian_or_ubuntu
 from config import CUPS_SERVER
 
@@ -33,8 +32,8 @@ def deploy():
         print red("Cannot deploy to non-debian/ubuntu host: %s" % env.host)
         return
     
-    packages = {"cupsys":"latest", "cupsys-client":"latest"}
+    import apt, service
+    packages = {"cupsys":"latest", "cups-client":"latest"}
     apt.ensure(**packages)
     config()
-    
     service.ensure(cupsys="restarted")

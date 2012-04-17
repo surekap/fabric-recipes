@@ -1,4 +1,4 @@
 rocommunity %(public)s
 syslocation %(location)s
 syscontact %(contact)s
-com2sec readonly %(net)s %(public)s
+com2sec readonly %(net)s public

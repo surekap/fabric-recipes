@@ -39,7 +39,7 @@ def service_get_status(service):
         return SERVICE_STATUS_NOTRUNNING
     elif svcstatus.find("running") > -1:
         return SERVICE_STATUS_RUNNING
-    elif svcservice == "iptables" and svcstatus.find("ACCEPT") != -1:
+    elif service == "iptables" and svcstatus.find("ACCEPT") != -1:
         return SERVICE_STATUS_RUNNING
     
     return SERVICE_STATUS_NOTRUNNING

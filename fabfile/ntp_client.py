@@ -30,7 +30,7 @@ def timezone(timezone=env.get("TIMEZONE", TIMEZONE)):
     return run("cp -f /usr/share/zoneinfo/%s /etc/localtime" % timezone)
 
 @task
-def config():
+def config(server=env.get("TIME_SERVER", TIME_SERVER)):
     """ Configure NTP sync to server. """
     
     if not is_debian_or_ubuntu():
@@ -48,7 +48,7 @@ def deploy(server=env.get("TIME_SERVER", TIME_SERVER)):
         return
         
     import apt, service
-    packages = {"ntp":"latest", "ntp-simple":"latest", "ntpdate":"latest"}
+    packages = {"ntp":"latest", "ntpdate":"latest"}
     apt.ensure(**packages)
     config()
     
