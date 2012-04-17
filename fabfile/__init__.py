@@ -18,5 +18,5 @@ import whois
 
 
 # TODO:
-#hosts.ensure_fromfile
-#hosts.file_to_iptraf
+# hosts.ensure_fromfile
+# hosts.file_to_iptraf
