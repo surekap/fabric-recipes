@@ -10,8 +10,9 @@
 """
 
 from fabric.api import task, run, env
-from fabric.colors import red
+from fabric.colors import red, yellow
 from utils import reconfigure
+from config import config
 import sys
 
 env.warn_only = True
@@ -33,8 +34,7 @@ def usage():
     print "fab apt.cleaned"
     
 
-@task
-def status(pkgspec):
+def full_status(pkgspec):
     """Get the status of a package as a tuple (installed, upgradeable) 
     given a package-name.
     """
@@ -44,11 +44,27 @@ def status(pkgspec):
         print red("Unable to query package status: %s" % pkgspec)
     return (not (pkgstatus.find("not installed") > -1), (pkgstatus.find("upgradeable") > -1))
 
-def install(pkgspec, upgrade=False):
+@task
+def status(pkgspec):
+    """Get the status of a package (installed=True, uninstalled=False) 
+    given a package-name.
+    """
+    cmd = "dpkg -s %s"
+    pkgstatus = run(cmd % pkgspec)
+    if pkgstatus.find("install ok installed") > -1:
+        return True
+    return False
+
+def install(pkgspec, upgrade=False, force=False):
     """Install a package."""
-    (installed, upgradable) = status(pkgspec)
+    if upgrade == False:
+        (installed, upgradable) = status(pkgspec), False
+    else:
+        (installed, upgradable) = full_status(pkgspec)
+    
+    force = "--force-yes" if force is True else ""
     if (not installed) or (upgrade and upgradable):
-        cmd = "%s -q -y install '%s'" % (APT, pkgspec)
+        cmd = "%s -q -y %s install '%s'" % (APT, force, pkgspec)
         ret = run(cmd)
         if ret.failed:
             print red("'apt-get install %s' failed: %s" % (pkgspec, ret))
@@ -57,7 +73,7 @@ def install(pkgspec, upgrade=False):
 
 def remove(pkgspec, purge=False):
     """Remove a package."""
-    (installed, upgradable) = status(pkgspec)
+    installed = status(pkgspec)
     if not installed:
         return True
     else:
@@ -84,9 +100,9 @@ def ensure(**kwargs):
         
         result = False
         if state == "latest":
-            result = install(package, upgrade=True)
+            result = install(package, upgrade=True, force=True)
         elif state == "installed":
-            result = install(package)
+            result = install(package, force=True)
         elif state == "removed":
             result = remove(package, purge=purge)
         
@@ -103,9 +119,11 @@ def cleaned():
     run("apt-get autoclean")
 
 @task
-def deploy(server=env.get("APT_PROXY_SERVER", APT_PROXY_SERVER), port=env.get("APT_PROXY_PORT", APT_PROXY_PORT)):
+def deploy(server=config.get("apt", {}).get("apt_proxy_server", ""), port=config.get("apt", {}).get("apt_proxy_port", "")):
     """ Direct each host to use an apt proxy (approx/apt-proxy/apt-cacher-ng). """
-    reconfigure("apt_02proxy.template", locals(), APT_PROXY_PATH)
+    
+    params = {'server':server, 'port':port}
+    reconfigure("apt_02proxy.template", params, APT_PROXY_PATH)
     
     # Only copy sources.list if we are using debian 6.0
     if run("cat /etc/issue").find("6.0") > -1:

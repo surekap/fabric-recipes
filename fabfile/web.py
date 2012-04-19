@@ -13,7 +13,7 @@ from fabric.api import task, run, env, roles
 from fabric.contrib.files import exists
 from fabric.colors import red, green
 from utils import reconfigure
-from config import WEB_DOMAIN, WEB_SSL_CERTIFICATE, WEB_SSL_CERTIFICATE_KEY
+from config import config
 import sys
 
 env.warn_only = True
@@ -32,12 +32,18 @@ def enabled(**kwargs):
     if len(kwargs) < 1:
         usage()
     changed = False
-    web_domain, web_ssl_certificate, web_ssl_certificate_key = (WEB_DOMAIN, WEB_SSL_CERTIFICATE, WEB_SSL_CERTIFICATE_KEY)
+    
     for sub, url in kwargs.iteritems():
         template = "web_nginx.template"
         if url.lower().startswith("https:"):
             template = "web_ssl_nginx.template"
-        changed = changed or reconfigure(template, locals(), "/etc/nginx/sites-available/%s" % sub)
+        
+        params = {}
+        params.update(config.get("web", {}))
+        params['sub'] = sub
+        params['url'] = url
+        
+        changed = changed or reconfigure(template, params, "/etc/nginx/sites-available/%s" % sub)
         if not exists("/etc/nginx/sites-enabled/%s" % sub):
             changed = True
             run("ln -s /etc/nginx/sites-available/%s /etc/nginx/sites-enabled/%s" % (sub, sub))
@@ -52,13 +58,19 @@ def disabled(**kwargs):
     if len(kwargs) < 1:
         usage()
     changed = False
-    web_domain, web_ssl_certificate, web_ssl_certificate_key = (WEB_DOMAIN, WEB_SSL_CERTIFICATE, WEB_SSL_CERTIFICATE_KEY)
+    
     for sub, url in kwargs.iteritems():
         template = "web_nginx.template"
         if url.lower().startswith("https:"):
             template = "web_ssl_nginx.template"
+        
+        params = {}
+        params.update(config.get("web", {}))
+        params['sub'] = sub
+        params['url'] = url
+        
         # reconfiguration doesn't matter in this case
-        reconfigure(template, locals(), "/etc/nginx/sites-available/%s" % sub)
+        reconfigure(template, params, "/etc/nginx/sites-available/%s" % sub)
         if exists("/etc/nginx/sites-enabled/%s" % sub):
             changed = True
             run("rm /etc/nginx/sites-enabled/%s" % sub)

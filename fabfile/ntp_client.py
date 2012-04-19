@@ -14,12 +14,13 @@ from fabric.colors import red
 from utils import reconfigure, is_debian_or_ubuntu
 env.warn_only = True
 
-from config import TIME_SERVER, TIMEZONE
+from config import config
+
 
 NTP_CONF_PATH = "/etc/ntp.conf"
 
 @task
-def timezone(timezone=env.get("TIMEZONE", TIMEZONE)):
+def timezone(timezone=config.get("ntp_client", {}).get("ntp_timezone", "Asia/Calcutta")):
     """ Set the timezone. """
     if not is_debian_or_ubuntu():
         print red("Cannot deploy to non-debian/ubuntu host: %s" % env.host)
@@ -30,7 +31,7 @@ def timezone(timezone=env.get("TIMEZONE", TIMEZONE)):
     return run("cp -f /usr/share/zoneinfo/%s /etc/localtime" % timezone)
 
 @task
-def config(server=env.get("TIME_SERVER", TIME_SERVER)):
+def configure(server=config.get("ntp_client", {}).get("ntp_server", "")):
     """ Configure NTP sync to server. """
     
     if not is_debian_or_ubuntu():
@@ -38,10 +39,11 @@ def config(server=env.get("TIME_SERVER", TIME_SERVER)):
         return
     
     # Upload configuration
-    reconfigure("ntp_client.conf.template", locals(), NTP_CONF_PATH)
+    params = {'server':server}
+    reconfigure("ntp_client.conf.template", params, NTP_CONF_PATH)
 
 @task
-def deploy(server=env.get("TIME_SERVER", TIME_SERVER)):
+def deploy(server=config.get("ntp_client", {}).get("ntp_server", "")):
     """ Install, configure and start ntp sync and timezone. """
     if not is_debian_or_ubuntu():
         print red("Cannot deploy to non-debian/ubuntu host: %s" % env.host)
@@ -50,7 +52,7 @@ def deploy(server=env.get("TIME_SERVER", TIME_SERVER)):
     import apt, service
     packages = {"ntp":"latest", "ntpdate":"latest"}
     apt.ensure(**packages)
-    config()
+    configure()
     
     # Sync with server
     run("ntpdate %s" % server)
@@ -64,5 +66,5 @@ def deploy(server=env.get("TIME_SERVER", TIME_SERVER)):
 @task
 def status():
     """ List the servers with which the host is synchronized. """
-    print run("ntpq")
+    print run("ntpq -p")
     print run("ntpdc -p")

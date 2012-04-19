@@ -32,6 +32,7 @@ SERVICE_STATUS_NOTRUNNING = 0
 SERVICE_STATUS_NOEXIST = -1
 
 def service_get_status(service):
+    """ Get the service status. """
     svcstatus = run("service %s status" % service)
     if svcstatus.find("unrecognized") > -1:
         return SERVICE_STATUS_NOEXIST
@@ -45,14 +46,17 @@ def service_get_status(service):
     return SERVICE_STATUS_NOTRUNNING
 
 def service_stop(service):
+    """ Stop the service. """
     svcstatus = run("service %s stop" % service)
     return svcstatus
 
 def service_start(service):
+    """ Start the service. """
     svcstatus = run("service %s start" % service)
     return svcstatus
 
 def service_restart(service):
+    """ Restart the service. """
     svcstatus = run("service %s restart" % service)
     if svcstatus.failed:
         svcstatus = service_stop(service)
@@ -60,6 +64,7 @@ def service_restart(service):
     return svcstatus
 
 def init_get_status(service):
+    """ Get the service status. """
     if not exists("/etc/init.d/%s" % service):
         return SERVICE_STATUS_NOEXIST
     
@@ -73,14 +78,17 @@ def init_get_status(service):
     return SERVICE_STATUS_NOTRUNNING
 
 def init_start(service):
+    """ Start the service. """
     svcstatus = run("/etc/init.d/%s start" % service)
     return svcstatus
 
 def init_stop(service):
+    """ Stop the service. """
     svcstatus = run("/etc/init.d/%s stop" % service)
     return svcstatus
 
 def init_restart(service):
+    """ Restart the service. """
     svcstatus = run("/etc/init.d/%s restart" % service)
     if svcstatus.failed:
         svcstatus = init_stop(service)
@@ -88,6 +96,9 @@ def init_restart(service):
     return svcstatus
     
 def _get_functions():
+    """ Resolve the set of functions to use based 
+    on availability of commands.
+    """
     if exists(SERVICE_PATH):
         return {
             "get_status": service_get_status,
@@ -132,11 +143,11 @@ def status(service):
     function_lib = _get_functions()
     s = function_lib['get_status'](service)
     print "%s: " % service,
-    if s is SERVICE_STATUS_RUNNING:
-        green("running")
-    elif s is SERVICE_STATUS_NOTRUNNING:
-        yellow("not running")
-    elif s is SERVICE_STATUS_NOEXIST:
-        red("no exist")
+    if s == SERVICE_STATUS_RUNNING:
+        print green("running")
+    elif s == SERVICE_STATUS_NOTRUNNING:
+        print yellow("not running")
+    elif s == SERVICE_STATUS_NOEXIST:
+        print red("no exist")
     return s
 

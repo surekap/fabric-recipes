@@ -11,29 +11,25 @@
 
 from fabric.api import task, env, run
 from fabric.colors import red
-from utils import reconfigure, is_debian_or_ubuntu
-env.warn_only = True
 
-from config import SNMP_PUBLIC, SNMP_LOCATION, SNMP_CONTACT, SNMP_NET
+import copy
+
+from utils import reconfigure, is_debian_or_ubuntu
+from config import config
+env.warn_only = True
 
 SNMPD_CONF_PATH = "/etc/snmp/snmpd.conf"
 SNMPD_PATH = "/etc/default/snmpd"
 
 @task
-def config(public=env.get("SNMP_PUBLIC", SNMP_PUBLIC), 
-            location=env.get("SNMP_LOCATION", SNMP_LOCATION), 
-            contact=env.get("SNMP_CONTACT", SNMP_CONTACT), 
-            net=env.get("SNMP_NET", SNMP_NET)):
+def configure(**kwargs):
     """ Configure SNMP on the server. """
     if not is_debian_or_ubuntu():
         print red("Cannot deploy to non-debian/ubuntu host: %s" % env.host)
         return
-    params = {
-        "public": public,
-        "location": location,
-        "contact": contact,
-        "net": net
-    }
+    params = copy.copy(config['snmp'])
+    params.update(kwargs)
+    
     reconfigure("snmpd.conf.template", params, SNMPD_CONF_PATH)
     reconfigure("snmpd.template", params, SNMPD_PATH)
 
@@ -53,5 +49,5 @@ def deploy():
         
     apt.ensure(**packages)
     
-    config()
+    configure()
     service.ensure(snmpd="restarted")

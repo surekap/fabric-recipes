@@ -1,0 +1,41 @@
+[global]
+password = secret
+remote_password = secret
+
+[roledefs]
+firewall = root@192.168.0.1:2222
+web = root@web1,root@web2
+
+[apt]
+apt_proxy_server = mirror.mydomain.com
+apt_proxy_port = 3142
+
+[ntp_client]
+ntp_server = time.mydomain.com
+ntp_timezone = Asia/Calcutta
+
+[cups_client]
+cups_server = print.mydomain.com
+
+[snmp]
+snmp_public = public
+snmp_location = 123 Main Street
+snmp_contact = nobody@nobody.com
+snmp_net = 192.168.0.0/24
+
+[syslog_client]
+syslog_server = log.mydomain.com
+syslog_proto = udp
+syslog_port = 514
+syslog_scope = *.*
+
+[web]
+web_domain = mydomain.com
+web_ssl_certificate = /etc/nginx/ssl/mydomain.com.crt
+web_ssl_certificate_key = /etc/nginx/ssl/mydomain.com.key
+
+[pkgsync]
+musthavelatest = /etc/pkgsync/musthavelatest
+musthave = /etc/pkgsync/musthave
+mayhave = /etc/pkgsync/mayhave
+maynothave = /etc/pkgsync/maynothave

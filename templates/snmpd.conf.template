@@ -1,4 +1,4 @@
-rocommunity %(public)s
-syslocation %(location)s
-syscontact %(contact)s
-com2sec readonly %(net)s public
+rocommunity %(snmp_public)s
+syslocation %(snmp_location)s
+syscontact %(snmp_contact)s
+com2sec readonly %(snmp_net)s public

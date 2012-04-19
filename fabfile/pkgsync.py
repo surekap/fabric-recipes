@@ -11,6 +11,7 @@
 
 from fabric.api import task, env
 from fabric.colors import red, yellow, green
+from config import config
 import os
 
 env.warn_only = True
@@ -28,10 +29,10 @@ def usage():
         /etc/pkgsync/musthavelatest,musthave=/etc/pkgsync/musthave"
 
 @task
-def sync(musthavelatest=env.get("MUSTHAVELATEST", MUSTHAVELATEST),
-            musthave=env.get("MUSTHAVE", MUSTHAVE),
-            mayhave=env.get("MAYHAVE", MAYHAVE),
-            maynothave=env.get("MAYNOTHAVE", MAYNOTHAVE)):
+def sync(musthavelatest=config.get("pkgsync", {}).get("musthavelatest", ""),
+            musthave=config.get("pkgsync", {}).get("musthave", ""),
+            mayhave=config.get("pkgsync", {}).get("mayhave", ""),
+            maynothave=config.get("pkgsync", {}).get("maynothave", "")):
     """
     Sync a system's packages with a pre-defined manifest. 
     The ``mayhave`` list currently gets ignored.

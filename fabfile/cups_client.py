@@ -12,18 +12,21 @@
 from fabric.api import task, env
 from fabric.colors import red
 from utils import reconfigure, is_debian_or_ubuntu
-from config import CUPS_SERVER
+from config import config
+import copy
 
 env.warn_only = True
 
 CUPS_CONF_PATH = "/etc/cups/client.conf"
 
 @task
-def config(server=env.get("CUPS_SERVER", CUPS_SERVER)):
+def configure(**kwargs):
     """ Configure NTP sync to server. """
     
     # Upload configuration
-    reconfigure("cups_client.conf.template", {"server":server}, CUPS_CONF_PATH)
+    params = copy.copy(config.get("cups_client", {}))
+    params.update(**kwargs)
+    reconfigure("cups_client.conf.template", params, CUPS_CONF_PATH)
 
 @task
 def deploy():
@@ -35,5 +38,5 @@ def deploy():
     import apt, service
     packages = {"cupsys":"latest", "cups-client":"latest"}
     apt.ensure(**packages)
-    config()
+    configure()
     service.ensure(cupsys="restarted")

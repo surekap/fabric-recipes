@@ -14,7 +14,7 @@ from fabric.contrib.files import exists, upload_template
 from fabric.colors import red, green
 from utils import is_debian_or_ubuntu
 
-from config import LOG_SERVER, LOG_PROTO, LOG_PORT, LOG_SCOPE
+from config import config
 import os, uuid
 
 env.warn_only = True
@@ -24,7 +24,10 @@ def usage():
     print "fab -H <host> syslog_client.deploy:server=192.168.0.6,proto=udp,port=514,scope=*.*"
 
 @task
-def deploy(server=env.get("LOG_SERVER", LOG_SERVER), proto=env.get("LOG_PROTO", LOG_PROTO), port=env.get("LOG_PORT", LOG_PORT), scope=env.get("LOG_SCOPE", LOG_SCOPE)):
+def deploy(server=config.get("syslog_client", {}).get("syslog_server", ""),
+            proto=config.get("syslog_client", {}).get("syslog_proto", ""),
+            port=config.get("syslog_client", {}).get("syslog_port", ""),
+            scope=config.get("syslog_client", {}).get("syslog_scope", "")):
     """ Configure and re-start syslog. """
     if not is_debian_or_ubuntu():
         print red("Cannot deploy to non-debian/ubuntu host: %s" % env.host)
